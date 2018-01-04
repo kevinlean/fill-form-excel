@@ -1,0 +1,18 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.recaudos.esb.ccb.org.co">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ws:registrarFormularios>
+         <metadata/>
+         <data>
+            <registrarFormulariosInDTO>
+               <numSolicitud>578031</numSolicitud>
+               <numOrdenPago>0010382079</numOrdenPago>
+               <numTramite>000001700000611</numTramite>
+               <idTipoFormulario>1</idTipoFormulario>
+               <idTipoModelo>2</idTipoModelo>
+               <idTipoAplicativo>1</idTipoAplicativo>
+            </registrarFormulariosInDTO>
+         </data>
+      </ws:registrarFormularios>
+   </soapenv:Body>
+</soapenv:Envelope>

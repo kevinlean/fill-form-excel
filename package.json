@@ -1,0 +1,16 @@
+{
+  "name": "test-excel-forms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "exceljs": "^0.8.1",
+    "xml-js": "^1.6.1"
+  }
+}
