@@ -5,13 +5,19 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "nodemon": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.5.1",
     "exceljs": "^0.8.1",
-    "sync-request": "^4.1.0",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
     "xml-js": "^1.6.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.14.7"
   }
 }
