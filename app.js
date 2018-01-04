@@ -1,56 +1,48 @@
 const http = require('http');
 
+// const request = require('sync-request');
+const rp = require('request-promise');
 const Excel = require('exceljs');
 const convert = require('xml-js');
 
-const host = '172.16.1.33';
-const port = '7800';
-const path = '/esb/service/SedeElectronica/';
-const method = 'POST';
-
-const postOptions = {
-    host,
-    port,
-    path,
-    method,
-    headers: {
-        'Content-Type': 'text/xml'
-    }
-};
+const URL = 'http://172.16.1.33:7800/esb/service/SedeElectronica/';
 
 const xlsxFile = `${__dirname}/documents/RECUPERA_MPN_VIRTUAL_2017-12-29.xlsx`;
 const workbook = new Excel.Workbook();
 
-let hashes = {};
+const testXml = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.recaudos.esb.ccb.org.co">
+        <soapenv:Header/>
+        <soapenv:Body>
+            <ws:registrarFormularios>
+                <metadata/>
+                <data>
+                    <registrarFormulariosInDTO>
+                    <numSolicitud>578031</numSolicitud>
+                    <numOrdenPago>0010382079</numOrdenPago>
+                    <numTramite>000001700000611</numTramite>
+                    <idTipoFormulario>1</idTipoFormulario>
+                    <idTipoModelo>2</idTipoModelo>
+                    <idTipoAplicativo>1</idTipoAplicativo>
+                    </registrarFormulariosInDTO>
+                </data>
+            </ws:registrarFormularios>
+        </soapenv:Body>
+    </soapenv:Envelope>`;
 
+// doRequest(URL, testXml);
 
-// const testXml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.recaudos.esb.ccb.org.co">
-//    <soapenv:Header/>
-//    <soapenv:Body>
-//       <ws:registrarFormularios>
-//          <metadata/>
-//          <data>
-//             <registrarFormulariosInDTO>
-//                <numSolicitud>578031</numSolicitud>
-//                <numOrdenPago>0010382079</numOrdenPago>
-//                <numTramite>000001700000611</numTramite>
-//                <idTipoFormulario>1</idTipoFormulario>
-//                <idTipoModelo>2</idTipoModelo>
-//                <idTipoAplicativo>1</idTipoAplicativo>
-//             </registrarFormulariosInDTO>
-//          </data>
-//       </ws:registrarFormularios>
-//    </soapenv:Body>
-// </soapenv:Envelope>`;
+const promises = [];
+const rows = [];
 
 workbook.xlsx.readFile(xlsxFile)
-    .then(function () {
+    .then(() => {
         const worksheet = workbook.getWorksheet('RECUPERA');
         const rowCount = worksheet.rowCount;
 
         console.log('Row Count', rowCount);
 
-        for (let i = 2; i < 30; i++) {
+        for (let i = 2; i < 42; i++) {
 
             const row = worksheet.getRow(i);
 
@@ -70,7 +62,7 @@ workbook.xlsx.readFile(xlsxFile)
                 console.log('numOrdenPago:', numOrdenPago);
                 console.log('numTramite:', numTramite);
                 console.log('currentHash:', currentHash);
-                
+
                 const xml = `
                     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.recaudos.esb.ccb.org.co">
                         <soapenv:Header/>
@@ -92,66 +84,76 @@ workbook.xlsx.readFile(xlsxFile)
                     </soapenv:Envelope>
                 `;
 
-
-                const req = http.request(postOptions, function (res) {
-
-                    // console.log('');
-                    // console.log('Status: ' + res.statusCode);
-                    // console.log('Headers: ' + JSON.stringify(res.headers));
-
-                    res.setEncoding('utf8');
-                    res.on('data', function (response) {
-                        // console.log('Response: ' + response);
-
-                        const jsonString = convert.xml2json(response, {
-                            compact: true,
-                            spaces: 4
-                        });
-                        const json = JSON.parse(jsonString);
-
-                        // console.log('');
-                        // console.log(jsonString);
-
-                        const firstLevel = 'soapenv:Envelope';
-                        const secondLevel = 'soapenv:Body';
-                        const thirdLevel = 'NS1:registrarFormulariosResponse';
-
-                        let hasErrors = true;
-                        let hashText;
-
-                        try {
-                            hasErrors = json[firstLevel][secondLevel][thirdLevel].data.registrarFormulariosOutDTO.resultado.codigoError._text !== '0000';
-                            hashText = json[firstLevel][secondLevel][thirdLevel].metadata.transactionID._text;
-                        } catch (error) {
-                            console.error('An error has ocurred getting the data:', error);
-                        }
-
-                        if (hasErrors === false && hashText) {
-                            console.log(`The hash for index ${index} is: ${hashText}`);
-                            hashes[index] = hashText;
-
-                            // row.getCell(10).value = hashText;
-
-                            // workbook.xlsx.writeFile(xlsxFile)
-                            //     .then(function () {
-                            //         console.log('Done');
-                            //     });
-                        } else if (hasErrors) {
-                            console.log('Couldn\'t generate the hash, it was an error in the execution');
-                        } else if (!hashText) {
-                            console.log('Invalid Hash:', hashText);
-                        }
-                    });
-                });
-
-                // On error
-                req.on('error', function (error) {
-                    console.error('Problem with request: ', error);
-                });
-
-                // Post the data
-                req.write(xml);
-                req.end();
+                promises.push(doRequest(URL, xml));
+                rows.push(row);
             }
         }
+
+        promises.reduce((promiseChain, currentTask) => {
+            return promiseChain.then(chainResults =>
+                currentTask.then(currentResult => [...chainResults, currentResult])
+            );
+        }, Promise.resolve([])).then(arrayOfResults => {
+            arrayOfResults.forEach((result, index) => modifyExcel(result, rows[index]));
+            workbook.xlsx.writeFile(xlsxFile)
+                .then(() => {
+                    console.log('Done');
+                }).catch(onError);
+        }).catch(onError);
+    }).catch(onError);
+
+function doRequest(uri, body) {
+    const options = {
+        uri,
+        body,
+        method: 'POST',
+        json: false,
+        headers: {
+            'Content-Type': 'text/xml'
+        },
+    };
+
+    promise = rp(options);
+
+    return promise;
+}
+
+function modifyExcel(parsedBody, row) {
+    console.log(new Date());
+
+    const jsonString = convert.xml2json(parsedBody, {
+        compact: true
     });
+    const json = JSON.parse(jsonString);
+
+    // console.log(json);
+
+    const firstLevel = 'soapenv:Envelope';
+    const secondLevel = 'soapenv:Body';
+    const thirdLevel = 'NS1:registrarFormulariosResponse';
+
+    let hasErrors = true;
+    let hashText;
+
+    const index = row.getCell(1).value;
+
+    try {
+        hasErrors = json[firstLevel][secondLevel][thirdLevel].data.registrarFormulariosOutDTO.resultado.codigoError._text !== '0000';
+        hashText = json[firstLevel][secondLevel][thirdLevel].metadata.transactionID._text;
+    } catch (error) {
+        console.error('An error has ocurred getting the data:', error);
+    }
+
+    if (hasErrors === false && hashText) {
+        console.log(`The hash for index ${index} is: ${hashText}`);
+        row.getCell(10).value = hashText;
+    } else if (hasErrors) {
+        console.error('Couldn\'t generate the hash, it was an error in the execution');
+    } else if (!hashText) {
+        console.error('Invalid Hash:', hashText);
+    }
+}
+
+function onError(error) {
+    console.error(error);
+}
