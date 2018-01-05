@@ -58,7 +58,7 @@ workbook.xlsx.readFile(xlsxFile)
             const numSolicitud = row.getCell('B').value;
             const numOrdenPago = row.getCell('C').value;
             const numTramite = row.getCell('D').value;
-            const currentHash = row.getCell('H').value;
+            const currentHash = row.getCell('G').value;
 
             // Validar que el index sea mayor o igual a 0,
             // exista un numero de orden de pago,
@@ -92,7 +92,7 @@ workbook.xlsx.readFile(xlsxFile)
                     </soapenv:Envelope>
                 `;
 
-                promises.push(doRequest(URLDEV, xml));
+                promises.push(doRequest(URLPROD, xml));
                 rows.push(row);
             }
         }
@@ -158,7 +158,7 @@ function modifyExcel(parsedBody, row) {
 
     if (hasErrors === false && hashText) {
         console.log(`The hash for index ${index} is: ${hashText}`);
-        row.getCell('H').value = hashText;
+        row.getCell('G').value = hashText;
     } else if (hasErrors) {
         console.error('Couldn\'t generate the hash, it was an error in the execution');
     } else if (!hashText) {
