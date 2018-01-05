@@ -93,7 +93,7 @@ workbook.xlsx.readFile(xlsxFile)
                     </soapenv:Envelope>
                 `;
 
-                promises.push(doRequest(URLPROD, xml));
+                promises.push(doRequest(URLDEV, xml));
                 rows.push(row);
             }
         }
