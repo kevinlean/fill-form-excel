@@ -43,14 +43,14 @@ workbook.xlsx.readFile(xlsxFile)
         const worksheet = workbook.getWorksheet('Sheet1');
         const rowCount = worksheet.rowCount;
 
-        // Total 1287
+        // Total 692
         const initial = 1;
-        const count = 10;
+        const limit = 10;
 
-        console.log('Current count', count);
+        console.log('Current limit', limit);
         console.log('Row count', rowCount);
 
-        for (let i = initial; i < count; i++) {
+        for (let i = initial; i < limit; i++) {
 
             const row = worksheet.getRow(i);
 
@@ -61,10 +61,9 @@ workbook.xlsx.readFile(xlsxFile)
             const currentHash = row.getCell('H').value;
 
             // Validar que el index sea mayor o igual a 0,
-            // exista un numero de solicitud,
-            // un numero de orden de pago,
+            // exista un numero de orden de pago,
             // un numero de tramite y que no se haya generado un hash
-            if (index >= 0 && numOrdenPago && numTramite && currentHash == null) {
+            if (index >= 0 && index !== null && numOrdenPago && numTramite && currentHash == null) {
                 hasChanged = true;
                 console.log('index:', index);
                 console.log('numSolicitud:', numSolicitud);
