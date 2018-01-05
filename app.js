@@ -60,9 +60,9 @@ workbook.xlsx.readFile(xlsxFile)
             const numTramite = row.getCell('G').value;
             const currentHash = row.getCell('J').value;
 
-            // Validar que el index sea mayor o igual a 0, 
-            // exista un numero de solicitud, 
-            // un numero de orden de pago, 
+            // Validar que el index sea mayor o igual a 0,
+            // exista un numero de solicitud,
+            // un numero de orden de pago,
             // un numero de tramite y que no se haya generado un hash
             if (index >= 0 && numSolicitud > 0 && numOrdenPago && numTramite && currentHash == null) {
                 hasChanged = true;
