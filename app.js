@@ -106,8 +106,8 @@ workbook.xlsx.readFile(xlsxFile)
         const resultPromise = promises.reduce((promise, currentPromise, index) => {
             return promise.then(_ =>
                 currentPromise.then(result => {
-                    modifyExcel(result, rows[index]);
-                    console.log(`Executed promise with index ${index}`);
+                    modifyCellValue(result, rows[index]);
+                    console.log(`Executed promise with index ${index} at ${new Date()}`);
                 }).catch()
             );
         }, Promise.resolve());
@@ -115,6 +115,7 @@ workbook.xlsx.readFile(xlsxFile)
         resultPromise.then(_ => {
             console.log('All promises where executed');
             if (hasChanged) {
+                // Write on excel file
                 workbook.xlsx.writeFile(xlsxFile)
                     .then(() => {
                         console.log('The file was modified successfully');
@@ -140,9 +141,8 @@ function doRequest(uri, body) {
     return promise;
 }
 
-function modifyExcel(parsedBody, row) {
+function modifyCellValue(parsedBody, row) {
     const index = row.getCell(INDEX_CELL).value;
-    console.log(`${index}: ${new Date()}`);
 
     const jsonString = convert.xml2json(parsedBody, {
         compact: true
