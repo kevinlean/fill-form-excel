@@ -8,7 +8,7 @@ const convert = require('xml-js');
 const URLDEV = 'http://172.16.1.33:7800/esb/service/SedeElectronica/';
 const URLPROD = 'http://172.16.1.127:7800/esb/service/SedeElectronica/';
 
-const xlsxFile = `${__dirname}/documents/RECUPERA_MPN_VIRTUAL_2017-12-29.xlsx`;
+const xlsxFile = `${__dirname}/documents/SinDireccion_2.xlsx`;
 const workbook = new Excel.Workbook();
 
 // const testXml = `
@@ -40,7 +40,7 @@ let hasChanged = false;
 
 workbook.xlsx.readFile(xlsxFile)
     .then(() => {
-        const worksheet = workbook.getWorksheet('RECUPERA');
+        const worksheet = workbook.getWorksheet('Sheet1');
         const rowCount = worksheet.rowCount;
 
         // Total 1287
@@ -55,16 +55,16 @@ workbook.xlsx.readFile(xlsxFile)
             const row = worksheet.getRow(i);
 
             const index = row.getCell('A').value;
-            const numSolicitud = row.getCell('C').value;
-            const numOrdenPago = row.getCell('E').value;
-            const numTramite = row.getCell('G').value;
-            const currentHash = row.getCell('J').value;
+            const numSolicitud = row.getCell('B').value;
+            const numOrdenPago = row.getCell('C').value;
+            const numTramite = row.getCell('D').value;
+            const currentHash = row.getCell('H').value;
 
             // Validar que el index sea mayor o igual a 0,
             // exista un numero de solicitud,
             // un numero de orden de pago,
             // un numero de tramite y que no se haya generado un hash
-            if (index >= 0 && numSolicitud > 0 && numOrdenPago && numTramite && currentHash == null) {
+            if (index >= 0 && numOrdenPago && numTramite && currentHash == null) {
                 hasChanged = true;
                 console.log('index:', index);
                 console.log('numSolicitud:', numSolicitud);
@@ -159,7 +159,7 @@ function modifyExcel(parsedBody, row) {
 
     if (hasErrors === false && hashText) {
         console.log(`The hash for index ${index} is: ${hashText}`);
-        row.getCell('J').value = hashText;
+        row.getCell('H').value = hashText;
     } else if (hasErrors) {
         console.error('Couldn\'t generate the hash, it was an error in the execution');
     } else if (!hashText) {
