@@ -65,3 +65,6 @@ package-lock.json
 
 # vscode
 .vscode/
+
+# Current folders
+documents/
