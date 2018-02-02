@@ -5,18 +5,18 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "nodemon": "nodemon app.js",
+    "nodemon": "node_modules/.bin/nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "exceljs": "^0.8.1",
+    "exceljs": "^0.8.2",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
-    "xml-js": "^1.6.1"
+    "xml-js": "^1.6.2"
   },
   "devDependencies": {
-    "nodemon": "^1.14.7"
+    "nodemon": "^1.14.12"
   }
 }
