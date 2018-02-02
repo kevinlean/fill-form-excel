@@ -31,7 +31,7 @@ const workbook = new Excel.Workbook();
 //         </soapenv:Body>
 //     </soapenv:Envelope>`;
 
-// doRequest(URL, TEST_XML);
+// sendRequest(URL, TEST_XML);
 
 const NUM_SOLICITUD_CELL = 'C';
 const NUM_ORDEN_CELL = 'D';
@@ -68,7 +68,9 @@ workbook.xlsx.readFile(xlsxFile)
 
             // Cuando es persona natural, el idTipoFormulario es 2.
             // Si es establcimiento de comercio, el idTipoFormulario es 1
-            const tipoFormulario = (organizacion.includes('2901') || organizacion.toLowerCase().includes('persona natural')) ? 2 : 1;
+            const idTipoFormulario = (organizacion.includes('2901') || organizacion.toLowerCase().includes('persona natural')) ? 2 : 1;
+            const idTipoModelo = 2;
+            const idTipoAplicativo = 1;
 
             // Validar que exista un numero de orden de pago y que sea un numero mayor a 0,
             // que exista un numero de tramite
@@ -90,12 +92,12 @@ workbook.xlsx.readFile(xlsxFile)
                                 <metadata/>
                                 <data>
                                     <registrarFormulariosInDTO>
-                                    <numSolicitud>${numSolicitud}</numSolicitud>
-                                    <numOrdenPago>${numOrdenPago}</numOrdenPago>
-                                    <numTramite>${numTramite}</numTramite>
-                                    <idTipoFormulario>${tipoFormulario}</idTipoFormulario>
-                                    <idTipoModelo>2</idTipoModelo>
-                                    <idTipoAplicativo>1</idTipoAplicativo>
+                                        <numSolicitud>${numSolicitud}</numSolicitud>
+                                        <numOrdenPago>${numOrdenPago}</numOrdenPago>
+                                        <numTramite>${numTramite}</numTramite>
+                                        <idTipoFormulario>${idTipoFormulario}</idTipoFormulario>
+                                        <idTipoModelo>${idTipoModelo}</idTipoModelo>
+                                        <idTipoAplicativo>${idTipoAplicativo}</idTipoAplicativo>
                                     </registrarFormulariosInDTO>
                                 </data>
                             </ws:registrarFormularios>
@@ -103,7 +105,7 @@ workbook.xlsx.readFile(xlsxFile)
                     </soapenv:Envelope>
                 `;
 
-                promises.push(doRequest(URL_DEV, xml));
+                promises.push(sendRequest(URL_DEV, xml));
                 rows.push(row);
             }
         }
@@ -130,7 +132,7 @@ workbook.xlsx.readFile(xlsxFile)
 
     }).catch(onError);
 
-function doRequest(uri, body) {
+function sendRequest(uri, body) {
     const options = {
         uri,
         body,
