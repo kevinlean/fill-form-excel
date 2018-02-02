@@ -4,6 +4,7 @@
 
 - Nodejs
 - npm
+- Verificar conexión a la VPN
 
 ## Ejecución
 

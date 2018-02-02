@@ -36,8 +36,8 @@ const workbook = new Excel.Workbook();
 const NUM_SOLICITUD_CELL = 'C';
 const NUM_ORDEN_CELL = 'D';
 const NUM_TRAMITE_CELL = 'E';
-const HASH_CELL = 'J';
 const ORGANIZACION_CELL = 'G';
+const HASH_CELL = 'J';
 
 let promises = [];
 let rows = [];
@@ -51,7 +51,7 @@ workbook.xlsx.readFile(xlsxFile)
 
         // Total: 692
         const initial = 1;
-        const limit = 10;
+        const limit = 320;
 
         console.log('Current limit', limit);
         console.log('Row count', rowCount);
@@ -82,7 +82,7 @@ workbook.xlsx.readFile(xlsxFile)
                 console.log('numTramite:', numTramite);
                 console.log('currentHash:', currentHash);
                 console.log('organizacion:', organizacion);
-                console.log('tipoFormulario:', tipoFormulario);
+                console.log('idTipoFormulario:', idTipoFormulario);
 
                 const xml = `
                     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.recaudos.esb.ccb.org.co">
@@ -105,31 +105,35 @@ workbook.xlsx.readFile(xlsxFile)
                     </soapenv:Envelope>
                 `;
 
-                promises.push(sendRequest(URL_DEV, xml));
+                promises.push(sendRequest(URL_PROD, xml));
                 rows.push(row);
             }
         }
 
-        const resultPromise = promises.reduce((promise, currentPromise, numSolicitud) => {
-            return promise.then(_ =>
-                currentPromise.then(result => {
-                    modifyCellValue(result, rows[numSolicitud]);
-                    console.log(`Executed promise with numSolicitud ${numSolicitud} at ${new Date()}`);
-                }).catch()
-            );
-        }, Promise.resolve());
+        if (promises.length > 0) {
+            const resultPromise = promises.reduce((promise, currentPromise, index) => {
+                return promise.then(_ =>
+                    currentPromise.then(result => {
+                        modifyCellValue(result, rows[index]);
+                        console.log(`Executed promise with numSolicitud ${rows[index].getCell(NUM_SOLICITUD_CELL).value} at ${new Date()}`);
+                    }).catch()
+                );
+            }, Promise.resolve());
 
-        resultPromise.then(_ => {
-            console.log('All promises where executed');
-            if (hasChanged) {
-                // Write on excel file
-                workbook.xlsx.writeFile(xlsxFile)
-                    .then(() => {
-                        console.log('The file was modified successfully');
-                    }).catch(onError);
-            }
-        });
-
+            resultPromise.then(_ => {
+                console.log('All promises where executed');
+                if (hasChanged) {
+                    // Write on excel file
+                    workbook.xlsx.writeFile(xlsxFile)
+                        .then(() => {
+                            console.log('The file was modified successfully');
+                        }).catch(onError);
+                }
+            });
+        } else {
+            console.log('There was not any row that match all the conditions');
+            console.log('Finished');
+        }
     }).catch(onError);
 
 function sendRequest(uri, body) {
