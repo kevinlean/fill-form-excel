@@ -51,10 +51,10 @@ workbook.xlsx.readFile(xlsxFile)
 
         // Total: 692
         const initial = 1;
-        const limit = 10;
+        const limit = 30;
 
-        console.log('Current limit', limit);
-        console.log('Row count', rowCount);
+        console.log(`Current limit: ${limit}`);
+        console.log(`Total number of rows: ${rowCount}`);
 
         for (let i = initial; i < limit; i++) {
 
@@ -77,12 +77,13 @@ workbook.xlsx.readFile(xlsxFile)
             // y que no se haya generado un hash.
             if (parseInt(numOrdenPago) > 0 && numTramite && currentHash == null) {
                 hasChanged = true;
-                console.log('numSolicitud:', numSolicitud);
-                console.log('numOrdenPago:', numOrdenPago);
-                console.log('numTramite:', numTramite);
-                console.log('currentHash:', currentHash);
-                console.log('organizacion:', organizacion);
-                console.log('idTipoFormulario:', idTipoFormulario);
+                console.log(`numSolicitud: ${numSolicitud}`);
+                console.log(`numOrdenPago: ${numOrdenPago}`);
+                console.log(`numTramite: ${numTramite}`);
+                console.log(`currentHash: ${currentHash}`);
+                console.log(`organizacion: ${organizacion}`);
+                console.log(`idTipoFormulario: ${idTipoFormulario}`);
+                console.log('');
 
                 const xml = `
                     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.recaudos.esb.ccb.org.co">
@@ -112,23 +113,25 @@ workbook.xlsx.readFile(xlsxFile)
 
         if (promises.length > 0) {
             const resultPromise = promises.reduce((promise, currentPromise, index) => {
-                return delay(2000 * (index + 1)).then(_ =>
+                return delay(1000 * (index + 1)).then(_ =>
                     promise.then(_ =>
                         currentPromise.then(result => {
                             modifyCellValue(result, rows[index]);
-                            console.log(`Executed promise with numSolicitud ${rows[index].getCell(NUM_SOLICITUD_CELL).value} at ${new Date()}`);
+                            const numSolicitud = rows[index].getCell(NUM_SOLICITUD_CELL).value;
+                            console.log(`Executed promise with numSolicitud ${numSolicitud} at ${new Date()}.`);
+                            console.log('');
                         }).catch()
                     )
                 );
             }, Promise.resolve());
 
             resultPromise.then(_ => {
-                console.log('All promises where executed');
+                console.log('All promises where executed.');
                 if (hasChanged) {
                     // Write on excel file
                     workbook.xlsx.writeFile(xlsxFile)
                         .then(() => {
-                            console.log('The file was modified successfully');
+                            console.log(`The file ${xlsxFile} was modified successfully.`);
                         }).catch(onError);
                 }
             });
@@ -162,8 +165,6 @@ function modifyCellValue(parsedBody, row) {
     });
     const json = JSON.parse(jsonString);
 
-    // console.log(json);
-
     const firstLevel = 'soapenv:Envelope';
     const secondLevel = 'soapenv:Body';
     const thirdLevel = 'NS1:registrarFormulariosResponse';
@@ -175,16 +176,16 @@ function modifyCellValue(parsedBody, row) {
         hasErrors = json[firstLevel][secondLevel][thirdLevel].data.registrarFormulariosOutDTO.resultado.codigoError._text !== '0000';
         hashText = json[firstLevel][secondLevel][thirdLevel].metadata.transactionID._text;
     } catch (error) {
-        console.error('An error has ocurred getting the data:', error);
+        console.error(`An error has ocurred getting the data: ${error}.`);
     }
 
     if (hasErrors === false && hashText) {
-        console.log(`The hash for numSolicitud ${numSolicitud} is: ${hashText}`);
+        console.log(`The hash for numSolicitud ${numSolicitud} is: ${hashText}.`);
         row.getCell(HASH_CELL).value = hashText;
     } else if (hasErrors) {
-        console.error('Couldn\'t generate the hash, it was an error in the execution');
+        console.error('Couldn\'t generate the hash, it was an error in the execution.');
     } else if (!hashText) {
-        console.error('Invalid Hash:', hashText);
+        console.error(`Invalid Hash: ${hashText}.`);
     }
 }
 
