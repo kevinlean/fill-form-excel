@@ -51,7 +51,7 @@ workbook.xlsx.readFile(xlsxFile)
 
         // Total: 692
         const initial = 1;
-        const limit = 320;
+        const limit = 10;
 
         console.log('Current limit', limit);
         console.log('Row count', rowCount);
@@ -105,18 +105,20 @@ workbook.xlsx.readFile(xlsxFile)
                     </soapenv:Envelope>
                 `;
 
-                promises.push(sendRequest(URL_PROD, xml));
+                promises.push(sendRequest(URL_DEV, xml));
                 rows.push(row);
             }
         }
 
         if (promises.length > 0) {
             const resultPromise = promises.reduce((promise, currentPromise, index) => {
-                return promise.then(_ =>
-                    currentPromise.then(result => {
-                        modifyCellValue(result, rows[index]);
-                        console.log(`Executed promise with numSolicitud ${rows[index].getCell(NUM_SOLICITUD_CELL).value} at ${new Date()}`);
-                    }).catch()
+                return delay(2000 * (index + 1)).then(_ =>
+                    promise.then(_ =>
+                        currentPromise.then(result => {
+                            modifyCellValue(result, rows[index]);
+                            console.log(`Executed promise with numSolicitud ${rows[index].getCell(NUM_SOLICITUD_CELL).value} at ${new Date()}`);
+                        }).catch()
+                    )
                 );
             }, Promise.resolve());
 
@@ -184,6 +186,10 @@ function modifyCellValue(parsedBody, row) {
     } else if (!hashText) {
         console.error('Invalid Hash:', hashText);
     }
+}
+
+function delay(delay, value) {
+    return new Promise(resolve => setTimeout(resolve.bind(null, value), delay));
 }
 
 function onError(error) {
