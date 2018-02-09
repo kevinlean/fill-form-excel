@@ -136,7 +136,7 @@ workbook.xlsx.readFile(xlsxFile)
                 }
             });
         } else {
-            console.log('There was not any row that match all the conditions');
+            console.log('There was not any row that matches all the conditions');
             console.log('Finished');
         }
     }).catch(onError);
