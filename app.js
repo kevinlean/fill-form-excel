@@ -1,7 +1,7 @@
 /* jshint esversion: 6 */
 const http = require('http');
 
-const rp = require('request-promise');
+const axios = require('axios');
 const Excel = require('exceljs');
 const convert = require('xml-js');
 
@@ -51,7 +51,7 @@ workbook.xlsx.readFile(xlsxFile)
 
         // Total: 692
         const initial = 1;
-        const limit = 30;
+        const limit = 10;
 
         console.log(`Current limit: ${limit}`);
         console.log(`Total number of rows: ${rowCount}`);
@@ -115,13 +115,13 @@ workbook.xlsx.readFile(xlsxFile)
             const resultPromise = promises.reduce((promise, currentPromise, index) => {
                 return delay(1000 * (index + 1)).then(_ =>
                     promise.then(_ =>
-                        currentPromise.then(result => {
-                            modifyCellValue(result, rows[index]);
+                        delay(1000).then(currentPromise.then(result => {
+                            modifyCellValue(result.data, rows[index]);
                             const numSolicitud = rows[index].getCell(NUM_SOLICITUD_CELL).value;
                             console.log(`Executed promise with numSolicitud ${numSolicitud} at ${new Date()}.`);
                             console.log('');
-                        }).catch()
-                    )
+                        }).catch(onError)
+                    ))
                 );
             }, Promise.resolve());
 
@@ -141,19 +141,18 @@ workbook.xlsx.readFile(xlsxFile)
         }
     }).catch(onError);
 
-function sendRequest(uri, body) {
-    const options = {
-        uri,
-        body,
+function sendRequest(url, data) {
+    const config = {
+        url,
+        data,
         method: 'POST',
-        json: false,
         headers: {
             'Content-Type': 'text/xml'
         },
+        responseType: 'text',
     };
 
-    promise = rp(options);
-
+    const promise = axios.request(config);
     return promise;
 }
 
@@ -194,5 +193,7 @@ function delay(delay, value) {
 }
 
 function onError(error) {
+    console.error(`Failed at ${new Date()}.`);
     console.error(error);
+    console.log('');
 }
