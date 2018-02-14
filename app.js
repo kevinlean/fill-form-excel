@@ -11,45 +11,24 @@ const URL_PROD = 'http://172.16.1.127:7800/esb/service/SedeElectronica/';
 const xlsxFile = `${__dirname}/documents/MPN_MEC_Virtual.xlsx`;
 const workbook = new Excel.Workbook();
 
-// const TEST_XML = `
-//     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.recaudos.esb.ccb.org.co">
-//         <soapenv:Header/>
-//         <soapenv:Body>
-//             <ws:registrarFormularios>
-//                 <metadata/>
-//                 <data>
-//                     <registrarFormulariosInDTO>
-//                     <numSolicitud>578031</numSolicitud>
-//                     <numOrdenPago>0010382079</numOrdenPago>
-//                     <numTramite>000001700000611</numTramite>
-//                     <idTipoFormulario>1</idTipoFormulario>
-//                     <idTipoModelo>2</idTipoModelo>
-//                     <idTipoAplicativo>1</idTipoAplicativo>
-//                     </registrarFormulariosInDTO>
-//                 </data>
-//             </ws:registrarFormularios>
-//         </soapenv:Body>
-//     </soapenv:Envelope>`;
-
-// sendRequest(URL, TEST_XML);
-
 const NUM_SOLICITUD_CELL = 'C';
 const NUM_ORDEN_CELL = 'D';
 const NUM_TRAMITE_CELL = 'E';
 const ORGANIZACION_CELL = 'G';
-const HASH_CELL = 'J';
+const HASH_CELL = 'J'; /* Columna en la que se guardara el Hash generado */
 
 let promises = [];
 let rows = [];
 
 let hasChanged = false;
 
+// runExample();
+
 workbook.xlsx.readFile(xlsxFile)
     .then(() => {
         const worksheet = workbook.getWorksheet('Sheet1');
         const rowCount = worksheet.rowCount;
 
-        // Total: 692
         const initial = 1;
         const limit = 10;
 
@@ -128,7 +107,6 @@ workbook.xlsx.readFile(xlsxFile)
             resultPromise.then(_ => {
                 console.log('All promises where executed.');
                 if (hasChanged) {
-                    // Write on excel file
                     workbook.xlsx.writeFile(xlsxFile)
                         .then(() => {
                             console.log(`The file ${xlsxFile} was modified successfully.`);
@@ -196,4 +174,39 @@ function onError(error) {
     console.error(`Failed at ${new Date()}.`);
     console.error(error);
     console.log('');
+}
+
+function runExample() {
+    const NUM_SOLICITUD = 578031;
+    const NUM_ORDEN_PAGO = '0010382079';
+    const NUM_TRAMITE = '000001700000611';
+    const ID_TIPO_FORMULARIO = 1;
+    const ID_TIPO_MODELO = 2;
+    const ID_TIPO_APLICATIVO = 1;
+
+    const TEST_XML = `
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.recaudos.esb.ccb.org.co">
+            <soapenv:Header/>
+            <soapenv:Body>
+                <ws:registrarFormularios>
+                    <metadata/>
+                    <data>
+                        <registrarFormulariosInDTO>
+                            <numSolicitud>${NUM_SOLICITUD}</numSolicitud>
+                            <numOrdenPago>${NUM_ORDEN_PAGO}</numOrdenPago>
+                            <numTramite>${NUM_TRAMITE}</numTramite>
+                            <idTipoFormulario>${ID_TIPO_FORMULARIO}</idTipoFormulario>
+                            <idTipoModelo>${ID_TIPO_MODELO}</idTipoModelo>
+                            <idTipoAplicativo>${ID_TIPO_APLICATIVO}</idTipoAplicativo>
+                        </registrarFormulariosInDTO>
+                    </data>
+                </ws:registrarFormularios>
+            </soapenv:Body>
+        </soapenv:Envelope>`;
+
+    sendRequest(URL, TEST_XML)
+        .then(result => {
+            console.log(`Executed promise with numSolicitud ${NUM_SOLICITUD} at ${new Date()}.`);
+            console.log('');
+        }).catch(onError);
 }
