@@ -8,8 +8,7 @@ const convert = require('xml-js');
 const URL_DEV = 'http://172.16.1.33:7800/esb/service/SedeElectronica/';
 const URL_PROD = 'http://172.16.1.127:7800/esb/service/SedeElectronica/';
 
-const xlsxFile = `${__dirname}/documents/MPN_MEC_Virtual.xlsx`;
-const workbook = new Excel.Workbook();
+const EXCEL_FILE_PATH = `${__dirname}/documents/MPN_MEC_Virtual.xlsx`;
 
 const NUM_SOLICITUD_CELL = 'C';
 const NUM_ORDEN_CELL = 'D';
@@ -23,8 +22,8 @@ let rows = [];
 let hasChanged = false;
 
 // runExample();
-
-workbook.xlsx.readFile(xlsxFile)
+const workbook = new Excel.Workbook();
+workbook.xlsx.readFile(EXCEL_FILE_PATH)
     .then(() => {
         const worksheet = workbook.getWorksheet('Sheet1');
         const rowCount = worksheet.rowCount;
@@ -32,18 +31,17 @@ workbook.xlsx.readFile(xlsxFile)
         const initial = 1;
         const limit = 10;
 
-        console.log(`Current limit: ${limit}`);
+        console.log(`Current row range: ${initial} - ${limit}`);
         console.log(`Total number of rows: ${rowCount}`);
 
         for (let i = initial; i < limit; i++) {
-
             const row = worksheet.getRow(i);
 
             const numSolicitud = row.getCell(NUM_SOLICITUD_CELL).value;
             const numOrdenPago = row.getCell(NUM_ORDEN_CELL).value;
             const numTramite = row.getCell(NUM_TRAMITE_CELL).value;
-            const currentHash = row.getCell(HASH_CELL).value;
             const organizacion = row.getCell(ORGANIZACION_CELL).value;
+            const currentHash = row.getCell(HASH_CELL).value;
 
             /*
             ** Cuando es persona natural, el idTipoFormulario es 2.
@@ -63,9 +61,9 @@ workbook.xlsx.readFile(xlsxFile)
                 console.log(`numSolicitud: ${numSolicitud}`);
                 console.log(`numOrdenPago: ${numOrdenPago}`);
                 console.log(`numTramite: ${numTramite}`);
-                console.log(`currentHash: ${currentHash}`);
                 console.log(`organizacion: ${organizacion}`);
                 console.log(`idTipoFormulario: ${idTipoFormulario}`);
+                console.log(`currentHash: ${currentHash}`);
                 console.log('');
 
                 const xml = `
@@ -111,9 +109,9 @@ workbook.xlsx.readFile(xlsxFile)
             resultPromise.then(_ => {
                 console.log('All promises where executed.');
                 if (hasChanged) {
-                    workbook.xlsx.writeFile(xlsxFile)
+                    workbook.xlsx.writeFile(EXCEL_FILE_PATH)
                         .then(() => {
-                            console.log(`The file ${xlsxFile} was modified successfully.`);
+                            console.log(`The file ${EXCEL_FILE_PATH} was modified successfully.`);
                         }).catch(onError);
                 }
             });
