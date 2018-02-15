@@ -45,15 +45,19 @@ workbook.xlsx.readFile(xlsxFile)
             const currentHash = row.getCell(HASH_CELL).value;
             const organizacion = row.getCell(ORGANIZACION_CELL).value;
 
-            // Cuando es persona natural, el idTipoFormulario es 2.
-            // Si es establcimiento de comercio, el idTipoFormulario es 1
+            /*
+            ** Cuando es persona natural, el idTipoFormulario es 2.
+            ** Si es establcimiento de comercio, el idTipoFormulario es 1
+            */
             const idTipoFormulario = (organizacion.includes('2901') || organizacion.toLowerCase().includes('persona natural')) ? 2 : 1;
             const idTipoModelo = 2;
             const idTipoAplicativo = 1;
 
-            // Validar que exista un numero de orden de pago y que sea un numero mayor a 0,
-            // que exista un numero de tramite
-            // y que no se haya generado un hash.
+            /*
+            ** Validar que exista un numero de orden de pago y que sea un numero mayor a 0,
+            ** que exista un numero de tramite
+            ** y que no se haya generado un hash.
+            */
             if (parseInt(numOrdenPago) > 0 && numTramite && currentHash == null) {
                 hasChanged = true;
                 console.log(`numSolicitud: ${numSolicitud}`);
